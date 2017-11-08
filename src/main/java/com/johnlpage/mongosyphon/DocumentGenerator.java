@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import java.math.BigDecimal;
+
 public class DocumentGenerator {
 	private IDataSource connection = null;
 	private JobDescription jobdesc;
@@ -23,6 +25,7 @@ public class DocumentGenerator {
 	String sectionName;
 	Document section = null;
 	Document template = null;
+	Document typeMap = null;
 	Document params = null;
 	String targetMode = null;
 	MongoBulkWriter mongoTarget = null;
@@ -44,6 +47,7 @@ public class DocumentGenerator {
 			System.exit(1);
 			;
 		}
+		this.typeMap = (Document) this.section.get("typeMap", Document.class);
 		this.template = (Document) this.section.get("template", Document.class);
 		this.params = params;
 
@@ -338,8 +342,11 @@ public class DocumentGenerator {
 
 		// Apply template to database ROW
 		if (row != null) {
-			if (template != null) {
+            if (typeMap != null) {
+                TypeMapper(typeMap, row);
+            }
 
+			if (template != null) {
 				rval = TemplateRow(template, row);
 			} else {
 				rval = row;
@@ -347,6 +354,25 @@ public class DocumentGenerator {
 		}
 		return rval;
 	}
+
+	@SuppressWarnings("unchecked")
+    private void TypeMapper(Document typeMap, Document row) {
+        for(String key : typeMap.keySet()) {
+			String targetType = (String) typeMap.get(key);
+			Object o = row.get(key);
+
+			if(targetType == "float") {
+				if (o.getClass() == BigDecimal.class) {
+					BigDecimal sourceValue = (BigDecimal) o;
+					row.put(key, sourceValue.floatValue());
+				} else {
+					throw new UnsupportedOperationException(String.format("Mapping from %s to float is not supported.", o.getClass()));
+				}
+			} else {
+				throw new UnsupportedOperationException(String.format("Unsupported type mapping: %s", targetType));
+            }
+        }
+    }
 
 	@SuppressWarnings("unchecked")
 	private Document TemplateRow(Document template, Document row) {
