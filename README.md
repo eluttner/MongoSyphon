@@ -128,7 +128,7 @@ Now we have a three table schema each _owner_ has 0 or more pets, each _pet_ has
 			name: "$name",
 			species : "@speciessection"
 		},
-		sql: 'SELECT * FROM pet where owner = ?',
+		query:{sql: 'SELECT * FROM pet where owner = ?'},
 		params: [ "ownerid" ]
 
 	},
@@ -137,7 +137,7 @@ Now we have a three table schema each _owner_ has 0 or more pets, each _pet_ has
 		template: {
 			_value : "$species"
 		},
-		sql: 'SELECT * from species where speciesid = ?',
+		query:{sql: 'SELECT * from species where speciesid = ?'},
 		params : [ "species" ]
 
 	}
