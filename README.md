@@ -109,7 +109,7 @@ Now we have a three table schema each _owner_ has 0 or more pets, each _pet_ has
 			mode: "insert",
 			uri: "mongodb://localhost:27017/",
 			namespace: "sdemo.owners"
-		}
+		},
 		template: {
 			_id: "$ownerid",
 			name: "$name",
