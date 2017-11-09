@@ -23,6 +23,7 @@ There is no GUI for MongoSyphon, job scheduling should be via cron or similar fo
 ## Short Demo
 ### Build
 1. Checkout from Github
+2. Download the ojdbc6.jar from Oracle and install it to your local maven repository, just change the value of -Dfile: `mvn install:install-file -Dfile=/Users/spencer1248/Downloads/ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0 -Dpackaging=jar`
 2. mvn package
 
 ### Prerequisites
