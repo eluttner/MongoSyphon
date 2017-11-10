@@ -1,6 +1,7 @@
 package com.johnlpage.mongosyphon;
 
 import java.io.FileOutputStream;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 public class DocumentGenerator {
     private IDataSource connection = null;
@@ -115,22 +117,36 @@ public class DocumentGenerator {
         if (connection == null) {
 
             String connStr = source.getString("uri");
+
             if (connStr == null) {
                 logger.error("No uri deinfed in source for " + sectionName);
                 System.exit(1);
             }
+            String connUser = "";
+            String connPassword = "";
+            String BASE_ENV = "";
+
+            if (connStr.startsWith("jdbc:"))
+            {
+                connUser =source.getString("user");
+                connPassword =source.getString("password");
+            }
+            else if (connStr.startsWith("env:")) {
+                Map<String, String> env = System.getenv();
+                BASE_ENV = connStr.substring(connStr.indexOf(":"));
+                connStr = env.get(BASE_ENV.toUpperCase() + "_DB_CONNECTION");
+                connUser = env.get(BASE_ENV.toUpperCase() + "_DB_USERNAME");
+                connPassword = env.get(BASE_ENV.toUpperCase() + "_DB_PASSWORD");
+            }
 
             logger.info("connecting to " + connStr);
             if (connStr.startsWith("mongodb:")) {
-                connection = new MongoConnection(connStr,
-                        section.containsKey("cached"));
+                connection = new MongoConnection(connStr, section.containsKey("cached"));
                 connection.Connect(null, null); // In the URI
-            } else if (connStr.startsWith("jdbc:")) {
-                connection = new RDBMSConnection(connStr,
-                        section.containsKey("cached"));
 
-                connection.Connect(source.getString("user"),
-                        source.getString("password"));
+            } else if (connStr.startsWith("jdbc:")) {
+                connection = new RDBMSConnection(connStr, section.containsKey("cached"));
+                connection.Connect(connUser, connPassword);
 
             } else {
                 logger.error("Don't know how to handle connection uri "
